@@ -1,0 +1,19 @@
+# Valkey REST API Configuration File Example
+# Copy this file to config.yaml and update with your actual values
+
+# API Server Configuration
+api:
+  port: 8080
+  auth_token: "your-secret-api-token-here"  # Generate a secure token: openssl rand -hex 32
+
+# Valkey Server Configuration
+valkey:
+  address: "localhost:6379"  # Valkey server address (use host.docker.internal:6379 if Valkey is on host and using bridge network)
+  password: "your-valkey-password"  # Leave empty string "" if no password required
+
+# Docker Configuration
+docker:
+  image_name: "valkey-rest"
+  container_name: "valkey-rest-api"
+  network_mode: "host"  # Options: "host" (recommended for Linux) or "bridge"
+
