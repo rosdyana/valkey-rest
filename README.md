@@ -10,13 +10,15 @@ valkey-rest/
 ├── Dockerfile              # Docker image definition
 ├── docker-compose.yml      # Docker Compose configuration (optional)
 ├── manage.sh              # Docker management script (recommended)
+├── setup-systemd.sh       # Interactive systemd service setup script
 ├── config.yaml.example    # Configuration template
 ├── go.mod                 # Go dependencies
 └── README.md              # This file
 ```
 
 **Key Files:**
-- `manage.sh` - Easy-to-use bash script for container management
+- `manage.sh` - Easy-to-use bash script for Docker container management
+- `setup-systemd.sh` - Interactive script for systemd service deployment
 - `config.yaml` - Your configuration file (copy from `config.yaml.example`)
 - `config.yaml.example` - Template configuration file
 
@@ -409,6 +411,43 @@ docker run -d --name valkey-rest-api \
 ```
 
 ### Option 4: Systemd Service (Native Binary)
+
+#### Interactive Setup (Recommended)
+
+Use the provided interactive setup script for an automated installation:
+
+1. **Make the script executable:**
+```bash
+chmod +x setup-systemd.sh
+```
+
+2. **Run the setup script:**
+```bash
+sudo ./setup-systemd.sh
+```
+
+The script will:
+- Check prerequisites (Go, systemd)
+- Guide you through configuration (port, Valkey address, passwords, tokens)
+- Build the binary automatically
+- Create the installation directory (`/opt/valkey-rest`)
+- Generate a secure AUTH_TOKEN (if not provided)
+- Create and configure the systemd service file
+- Install files with correct permissions
+- Enable and start the service
+- Verify the installation
+
+**Features:**
+- Interactive prompts for all configuration options
+- Automatic secure token generation using `openssl rand -hex 32`
+- Option to store secrets in an environment file for better security
+- Automatic user creation if needed
+- Service verification and health checks
+- Comprehensive error handling
+
+#### Manual Setup
+
+If you prefer to set up manually:
 
 1. Build the binary:
 ```bash
