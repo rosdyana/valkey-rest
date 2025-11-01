@@ -3,17 +3,31 @@ FROM golang:1.21-alpine AS builder
 
 WORKDIR /build
 
-# Copy go mod files
+# Set Go proxy and environment variables
+# Use multiple proxies for redundancy and direct fallback
+ENV GOPROXY=https://proxy.golang.org,https://goproxy.cn,direct
+ENV GOSUMDB=sum.golang.org
+ENV CGO_ENABLED=0
+
+# Copy go mod files first (for better Docker layer caching)
 COPY go.mod go.sum* ./
 
-# Download dependencies
-RUN go mod download
+# Download dependencies (only if go.sum exists, otherwise will be handled by go mod tidy)
+# Use -x flag to show what's happening for debugging
+RUN if [ -f go.sum ]; then \
+        go mod download; \
+    else \
+        echo "go.sum not found, dependencies will be downloaded during go mod tidy"; \
+    fi
 
 # Copy source code
 COPY . .
 
+# Tidy up dependencies, download, and verify (generates go.sum if missing)
+RUN go mod tidy && go mod download && go mod verify
+
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o valkey-rest .
+RUN GOOS=linux go build -a -installsuffix cgo -o valkey-rest .
 
 # Runtime stage
 FROM alpine:latest
