@@ -168,7 +168,7 @@ func (s *Server) handleSet(w http.ResponseWriter, r *http.Request) {
 	builder := s.client.B().Set().Key(key).Value(req.Value)
 	if req.Expiration > 0 {
 		// Expiration is in seconds
-		builder.Ex(req.Expiration)
+		builder.Ex(time.Duration(req.Expiration) * time.Second)
 	}
 
 	err := s.client.Do(ctx, builder.Build()).Error()
@@ -232,14 +232,14 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 	keys := []string{}
 
 	for {
-		result, err := s.client.Do(ctx, s.client.B().Scan().Cursor(cursor).Match(pattern).Count(uint64(limit)).Build()).AsScanEntry()
+		result, err := s.client.Do(ctx, s.client.B().Scan().Cursor(cursor).Match(pattern).Count(int64(limit)).Build()).AsScanEntry()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(ErrorResponse{Error: "internal server error"})
 			return
 		}
 
-		keys = append(keys, result.Keys...)
+		keys = append(keys, result.Elements...)
 		cursor = result.Cursor
 
 		if cursor == 0 || len(keys) >= limit {
