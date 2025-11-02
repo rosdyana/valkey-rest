@@ -1,0 +1,27 @@
+meta {
+  name: DELETE Key
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}keys/808080
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "value": "myvalue",
+    "expiration": 3600
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

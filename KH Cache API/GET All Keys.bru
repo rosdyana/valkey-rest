@@ -1,0 +1,25 @@
+meta {
+  name: GET All Keys
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/keys?pattern=*&limit=100
+  body: none
+  auth: bearer
+}
+
+params:query {
+  pattern: *
+  limit: 100
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

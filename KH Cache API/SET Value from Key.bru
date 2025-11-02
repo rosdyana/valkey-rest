@@ -1,0 +1,27 @@
+meta {
+  name: SET Value from Key
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/keys/808080
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "value": "myvalue",
+    "expiration": 10
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
