@@ -90,12 +90,13 @@ func (s *Server) authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 func (s *Server) setupRoutes() {
 	// Health check is public (no auth required)
 	s.router.HandleFunc("GET /health", s.handleHealth)
-	
+
 	// Protected endpoints require authentication
 	s.router.HandleFunc("GET /keys/{key}", s.authMiddleware(s.handleGet))
 	s.router.HandleFunc("POST /keys/{key}", s.authMiddleware(s.handleSet))
 	s.router.HandleFunc("DELETE /keys/{key}", s.authMiddleware(s.handleDelete))
 	s.router.HandleFunc("GET /keys", s.authMiddleware(s.handleList))
+	s.router.HandleFunc("DELETE /flush", s.authMiddleware(s.handleFlushAll))
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -258,6 +259,21 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (s *Server) handleFlushAll(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	err := s.client.Do(ctx, s.client.B().Flushall().Build()).Error()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(ErrorResponse{Error: "internal server error"})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "flushed", "message": "all keys have been deleted"})
+}
+
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	s.router.ServeHTTP(w, r)
@@ -295,7 +311,7 @@ func main() {
 	clientOption := valkey.ClientOption{
 		InitAddress: []string{config.ValkeyAddress},
 	}
-	
+
 	// Add password if provided
 	if config.ValkeyPassword != "" {
 		clientOption.Password = config.ValkeyPassword
@@ -358,4 +374,3 @@ func main() {
 
 	log.Println("Server exited")
 }
-

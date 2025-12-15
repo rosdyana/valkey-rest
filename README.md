@@ -31,6 +31,7 @@ valkey-rest/
 - ✅ Health check endpoint
 - ✅ Basic CRUD operations (GET, SET, DELETE)
 - ✅ Key listing with pattern matching
+- ✅ Flush all keys endpoint for cache clearing
 - ✅ Graceful shutdown
 - ✅ Environment-based configuration
 
@@ -123,6 +124,28 @@ Lists keys matching a pattern. Query parameters:
 {
   "keys": ["key1", "key2", "key3"],
   "count": 3
+}
+```
+
+### Flush All Keys
+```http
+DELETE /flush
+Authorization: Bearer <your-token>
+```
+Deletes all keys from the cache. This is a destructive operation that will remove all data from the Valkey database.
+
+**Response (200 OK):**
+```json
+{
+  "status": "flushed",
+  "message": "all keys have been deleted"
+}
+```
+
+**Response (500 Internal Server Error):**
+```json
+{
+  "error": "internal server error"
 }
 ```
 
@@ -543,6 +566,11 @@ curl -H "Authorization: Bearer your-token" \
 curl -X DELETE \
   -H "Authorization: Bearer your-token" \
   http://localhost:8080/keys/test
+
+# Flush all keys (requires token)
+curl -X DELETE \
+  -H "Authorization: Bearer your-token" \
+  http://localhost:8080/flush
 ```
 
 ### Testing Authentication
